@@ -17,6 +17,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type app struct {
+	DB *gorm.DB
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -42,9 +46,13 @@ func main() {
 		panic(err)
 	}
 
+	app := app{
+		DB: db,
+	}
+
 	router := chi.NewRouter()
 	router.Get("/data", dataHandler)
-	router.Post("/counter", counterHandler)
+	router.Post("/counter", app.counterHandler())
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf("0.0.0.0:%s", port),
@@ -56,7 +64,7 @@ func main() {
 
 	go func() {
 		if err = srv.ListenAndServe(); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}()
 
